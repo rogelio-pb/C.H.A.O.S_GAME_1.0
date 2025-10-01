@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PuertaBloqueadora : MonoBehaviour
 {
@@ -10,10 +11,16 @@ public class PuertaBloqueadora : MonoBehaviour
         // Verifica que sea el jugador
         if (collision.gameObject.CompareTag("Player"))
         {
-            if (Data.llave >= llavesNecesarias)
+            if (Data.llave >= llavesNecesarias && collision.gameObject.CompareTag("Player"))
             {
-                Debug.Log("¡Puerta abierta!");
-                Destroy(gameObject); // Destruye la puerta y puede pasar
+            Debug.Log("¡Puerta abierta!");
+                    Destroy(gameObject); // Destruye la puerta(por si ocupo para otra parte del codigo :D )
+             Debug.Log("¡Has salido del nivel!");
+                
+             int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+                SceneManager.LoadScene(currentSceneIndex + 1); // Asegúrate de tener el nivel "NextLevel" en tus escenas
+
+                Data.llave -= llavesNecesarias; // Resta las llaves usadas
             }
             else
             {
@@ -21,5 +28,7 @@ public class PuertaBloqueadora : MonoBehaviour
                 // Opcional: puedes reproducir un sonido de "cerrado"
             }
         }
+        }
     }
-}
+
+ 
