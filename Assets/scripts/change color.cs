@@ -3,8 +3,8 @@ using UnityEngine;
 public class changecolor : MonoBehaviour
 {
     public SpriteRenderer spriteRenderer; // Referencia al SpriteRenderer del objeto
-    public Color color1 = Color.red; // Primer color
-    public Color color2 = Color.blue; // Segundo color
+    public Color color1 = Color.blue; // Primer color
+    public Color color2 = Color.red; // Segundo color
     void Start()
     {
         if (spriteRenderer == null)
@@ -13,11 +13,8 @@ public class changecolor : MonoBehaviour
         }
     
     }
-    void Update()
+    private void OnMouseDown()
     {
-
-        if (Input.GetMouseButtonDown(0))
-        {
             // Cambia el color
             if (spriteRenderer.color == color1)
             {
@@ -30,4 +27,4 @@ public class changecolor : MonoBehaviour
         }
     }
 
-}
+

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 26f1e3c3b5d3cb34dab2f26b06d6bd66
+guid: 943e212ebcf6d8d419c99c90481de824
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2564237241391740540
-    second: Enfermera_0
+      213: -5125080225325198082
+    second: Asset 740_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,27 +96,40 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Enfermera_0
+      name: Asset 740_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 551
-        height: 1041
+        width: 587
+        height: 111
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c767bf46f20069320800000000000000
-      internalID: 2564237241391740540
+      spriteID: ef4dc1c50be00e8b0800000000000000
+      internalID: -5125080225325198082
       vertices: []
       indices: 
       edges: []
@@ -125,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 9e5d13ee25947c84692508c84fb7efc5
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Enfermera_0: 2564237241391740540
+      Asset 740_0: -5125080225325198082
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

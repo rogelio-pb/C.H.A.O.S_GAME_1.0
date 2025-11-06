@@ -1,10 +1,10 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
-    public Transform target; // El personaje que seguirá la cámara
-    public float smoothSpeed = 0.125f; // Qué tan suave se mueve la cámara
-    public Vector3 offset; // Distancia de la cámara respecto al personaje
+    public Transform target; // El personaje que seguirï¿½ la cï¿½mara
+    public float smoothSpeed = 0.125f; // Quï¿½ tan suave se mueve la cï¿½mara
+    public Vector3 offset; // Distancia de la cï¿½mara respecto al personaje
 
     void LateUpdate()
     {
@@ -16,4 +16,3 @@ public class CameraFollow : MonoBehaviour
         }
     }
 }
-

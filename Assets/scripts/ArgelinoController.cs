@@ -1,20 +1,27 @@
 ﻿using UnityEngine;
-// Si NO tienes diálogos aún, puedes borrar cualquier línea con "DialogueUI"
 
 public class ArgelinoController : MonoBehaviour
 {
-    public float speed = 3f; // Velocidad del personaje
+    [Header("Movimiento")]
+    public float speedNormal = 3f;       // Velocidad cuando no lo persiguen
+    public float speedPerseguido = 5f;   // Velocidad cuando lo persigue un enemigo
+
+    [HideInInspector]
+    public float speed;                  // Velocidad actual (se ajusta con ActivarPersecucion)
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
-    private Vector2 objetivo; // Punto al que queremos llegar
+
+    private Vector2 objetivo;  // Punto al que se moverá
     private bool moviendo = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
-        objetivo = rb.position; // Inicialmente en su posición actual
+
+        objetivo = rb.position;   // Inicia en su posición actual
+        speed = speedNormal;      // Arranca con velocidad normal
     }
 
     void Update()
@@ -33,9 +40,7 @@ public class ArgelinoController : MonoBehaviour
             if (Camera.main == null) return;
 
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            // Ahora nos movemos hacia X e Y (no solo X)
-            objetivo = new Vector2(mousePos.x, mousePos.y);
+            objetivo = new Vector2(mousePos.x, mousePos.y); // Se mueve a X e Y
             moviendo = true;
         }
     }
@@ -48,7 +53,7 @@ public class ArgelinoController : MonoBehaviour
 
         if (moviendo)
         {
-            // Calcula la dirección hacia el objetivo
+            // Calcular dirección hacia el objetivo
             Vector2 direccion = (objetivo - rb.position);
 
             // Si ya prácticamente llegamos, nos detenemos
@@ -61,11 +66,30 @@ public class ArgelinoController : MonoBehaviour
             direccion.Normalize();
 
             // Flip del sprite según la dirección X
-            if (direccion.x < 0) sr.flipX = true;   // Mirando izquierda
+            if (direccion.x < 0) sr.flipX = true;        // Mirando izquierda
             else if (direccion.x > 0) sr.flipX = false; // Mirando derecha
 
             // Movimiento usando Rigidbody2D para respetar colisiones
             rb.MovePosition(rb.position + direccion * speed * Time.fixedDeltaTime);
         }
+    }
+
+    // ░░░ MÉTODOS PARA captaEnemigo ░░░
+
+    // Versión sin parámetros, por si la llaman así:
+    // argelino.ActivarPersecucion();
+    public void ActivarPersecucion()
+    {
+        ActivarPersecucion(true);
+    }
+
+    // Versión con bool, por si la llaman así:
+    // argelino.ActivarPersecucion(true);  // perseguido
+    // argelino.ActivarPersecucion(false); // vuelve a normal
+    public void ActivarPersecucion(bool perseguido)
+    {
+        speed = perseguido ? speedPerseguido : speedNormal;
+        // Aquí podrías también cambiar animaciones, colores, etc.
+        // Debug.Log("[Argelino] Persecución: " + perseguido + "  speed = " + speed);
     }
 }
