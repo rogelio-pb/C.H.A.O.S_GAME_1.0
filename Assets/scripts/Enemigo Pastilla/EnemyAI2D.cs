@@ -16,7 +16,7 @@ public class EnemyAI2D : MonoBehaviour
     public float velocidadPatrulla = 2f;
     public float velocidadPersecucion = 3f;
 
-    [Header("Detección / Ataque")]
+    [Header("Detecciï¿½n / Ataque")]
     public float radioDeteccion = 5f;
     public float radioAtaque = 1.2f;
     public float tiempoEntreAtaques = 1f;
@@ -44,7 +44,7 @@ public class EnemyAI2D : MonoBehaviour
 
         float distanciaAlPlayer = Vector2.Distance(transform.position, player.position);
 
-        // Cambiar estado según distancia
+        // Cambiar estado segï¿½n distancia
         if (distanciaAlPlayer <= radioAtaque)
         {
             estadoActual = EstadoEnemy.Atacando;
@@ -79,24 +79,24 @@ public class EnemyAI2D : MonoBehaviour
     {
         if (puntoA == null || puntoB == null)
         {
-            rb.velocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
             return;
         }
 
         Vector2 direccion = (destinoActual.position - transform.position).normalized;
-        rb.velocity = direccion * velocidadPatrulla;
+        rb.linearVelocity = direccion * velocidadPatrulla;
 
-        // Si ya llegó cerca del punto de destino, cambiarlo
+        // Si ya llegï¿½ cerca del punto de destino, cambiarlo
         if (Vector2.Distance(transform.position, destinoActual.position) < 0.1f)
         {
             destinoActual = (destinoActual == puntoA) ? puntoB : puntoA;
         }
 
-        // Opcional: voltear sprite según dirección
-        if (rb.velocity.x != 0)
+        // Opcional: voltear sprite segï¿½n direcciï¿½n
+        if (rb.linearVelocity.x != 0)
         {
             Vector3 scale = transform.localScale;
-            scale.x = rb.velocity.x > 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
+            scale.x = rb.linearVelocity.x > 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
             transform.localScale = scale;
         }
     }
@@ -104,13 +104,13 @@ public class EnemyAI2D : MonoBehaviour
     private void Perseguir()
     {
         Vector2 direccion = (player.position - transform.position).normalized;
-        rb.velocity = direccion * velocidadPersecucion;
+        rb.linearVelocity = direccion * velocidadPersecucion;
 
         // Voltear sprite hacia el jugador
-        if (rb.velocity.x != 0)
+        if (rb.linearVelocity.x != 0)
         {
             Vector3 scale = transform.localScale;
-            scale.x = rb.velocity.x > 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
+            scale.x = rb.linearVelocity.x > 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
             transform.localScale = scale;
         }
     }
@@ -118,7 +118,7 @@ public class EnemyAI2D : MonoBehaviour
     private void Atacar()
     {
         // Al atacar, puedes decidir que se quede quieto o siga pegado al player
-        rb.velocity = Vector2.zero;
+        rb.linearVelocity = Vector2.zero;
 
         if (Time.time - ultimoTiempoAtaque >= tiempoEntreAtaques)
         {
@@ -126,12 +126,12 @@ public class EnemyAI2D : MonoBehaviour
             float distancia = Vector2.Distance(transform.position, player.position);
             if (distancia <= radioAtaque + 0.2f)
             {
-                // Hacer daño al player
+                // Hacer daï¿½o al player
                 PlayerHealth ph = player.GetComponent<PlayerHealth>();
                 if (ph != null)
                 {
                     ph.TakeDamage(danioAlPlayer);
-                    Debug.Log("[ENEMY] Atacando al player, daño: " + danioAlPlayer);
+                    Debug.Log("[ENEMY] Atacando al player, daï¿½o: " + danioAlPlayer);
                 }
 
                 ultimoTiempoAtaque = Time.time;
@@ -141,7 +141,7 @@ public class EnemyAI2D : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // Solo para ver en la escena los radios de detección/ataque
+        // Solo para ver en la escena los radios de detecciï¿½n/ataque
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, radioDeteccion);
 

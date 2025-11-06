@@ -1,14 +1,20 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;   // 👈 IMPORTANTE
 
 public class PlayerHealth : MonoBehaviour
 {
-    [Header("Vida del jugador")]
+    [Header("Configuración de vida")]
     public int maxHealth = 100;
     public int currentHealth;
 
-    [Header("Barra de vida (UI)")]
-    public Slider healthSlider; // Opcional, si tienes una barra en canvas
+    [Header("UI - Barra de vida")]
+    public Slider healthSlider;
+
+    [Header("Muerte")]
+    public string deathSceneName = "GameOverScene";  // 👈 nombre EXACTO de tu escena
+
+    private bool isDead = false;
 
     private void Start()
     {
@@ -23,13 +29,15 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (isDead) return; // si ya está muerto, ignora más daño
+
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         if (healthSlider != null)
             healthSlider.value = currentHealth;
 
-        Debug.Log($"[PLAYER] Da�o recibido: {damage}. Vida actual: {currentHealth}");
+        Debug.Log($"[PLAYER] Daño recibido: {damage}. Vida actual: {currentHealth}");
 
         if (currentHealth <= 0)
         {
@@ -39,7 +47,34 @@ public class PlayerHealth : MonoBehaviour
 
     private void Die()
     {
+        if (isDead) return;
+        isDead = true;
+
         Debug.Log("[PLAYER] El jugador ha muerto.");
-        // Aqu� pones lo que quieras: desactivar al player, cambiar de escena, etc.
+
+        // OPCIONAL: aquí puedes desactivar el movimiento del player, animación, etc.
+        // GetComponent<PlayerMovement>().enabled = false;
+
+        // Cargar la escena de muerte
+        if (!string.IsNullOrEmpty(deathSceneName))
+        {
+            SceneManager.LoadScene(deathSceneName);
+        }
+        else
+        {
+            // Si no pusiste nombre, al menos desactivamos al player
+            gameObject.SetActive(false);
+        }
+    }
+
+    public void Heal(int amount)
+    {
+        if (isDead) return;
+
+        currentHealth += amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        if (healthSlider != null)
+            healthSlider.value = currentHealth;
     }
 }
