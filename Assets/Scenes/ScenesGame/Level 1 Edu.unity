@@ -720,7 +720,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ad250f87f6085b4d8be1a1706a1843f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
+  speedNormal: 3
+  speedPerseguido: 5
 --- !u!95 &446601919
 Animator:
   serializedVersion: 7
@@ -2288,11 +2289,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7921716337330701177, guid: 158446e7faafc7c479edd3cf4027c801, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.42
+      value: -21.46
       objectReference: {fileID: 0}
     - target: {fileID: 7921716337330701177, guid: 158446e7faafc7c479edd3cf4027c801, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.32
+      value: 0.49
       objectReference: {fileID: 0}
     - target: {fileID: 7921716337330701177, guid: 158446e7faafc7c479edd3cf4027c801, type: 3}
       propertyPath: m_LocalPosition.z
