@@ -9,87 +9,138 @@ public class ArgelinoController : MonoBehaviour
     [HideInInspector]
     public float speed;                  // Velocidad actual (se ajusta con ActivarPersecucion)
 
+    [Header("Tap (paso corto)")]
+    public float tapStepDistance = 0.4f;   // qué tanto avanza en un toque corto
+    public float tapThreshold = 0.15f;     // menos de esto cuenta como "tap" (segundos)
+
+    [Header("Bloqueo por minijuego")]
+    public bool inputBlockedByMiniGame = false;
+    // Lo pondrá en true/false tu script de minijuego
+
     private Rigidbody2D rb;
     private SpriteRenderer sr;
 
-    private Vector2 objetivo;  // Punto al que se moverá
-    private bool moviendo = false;
+    // estados de movimiento continuo
+    private bool movingLeft = false;
+    private bool movingRight = false;
+
+    // para detectar tap vs mantener presionado
+    private float pressStartTime = 0f;
+    private int lastDir = 0; // -1 izquierda, +1 derecha
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
 
-        objetivo = rb.position;   // Inicia en su posición actual
         speed = speedNormal;      // Arranca con velocidad normal
+    }
+
+    // ---- helper para saber si la UI debe bloquear el movimiento ----
+    private bool IsInputBlocked()
+    {
+        // diálogo de la enfermera
+        if (DialogueUI.Instance != null && DialogueUI.Instance.IsOpen)
+            return true;
+
+        // minijuego (lo controlas desde tu script de minijuego)
+        if (inputBlockedByMiniGame)
+            return true;
+
+        return false;
     }
 
     void Update()
     {
-        // Si tienes sistema de diálogos y el panel está abierto, no te mueves
-        if (DialogueUI.Instance != null && DialogueUI.Instance.IsOpen)
+        if (IsInputBlocked())
         {
-            moviendo = false;
-            objetivo = rb.position;
+            movingLeft = false;
+            movingRight = false;
+            rb.linearVelocity = Vector2.zero;
             return;
-        }
-
-        // Detecta clic izquierdo del mouse
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (Camera.main == null) return;
-
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            objetivo = new Vector2(mousePos.x, mousePos.y); // Se mueve a X e Y
-            moviendo = true;
         }
     }
 
     void FixedUpdate()
     {
-        // Si hay diálogo abierto, no mover
-        if (DialogueUI.Instance != null && DialogueUI.Instance.IsOpen)
-            return;
-
-        if (moviendo)
+        if (IsInputBlocked())
         {
-            // Calcular dirección hacia el objetivo
-            Vector2 direccion = (objetivo - rb.position);
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
 
-            // Si ya prácticamente llegamos, nos detenemos
-            if (direccion.magnitude < 0.05f)
-            {
-                moviendo = false;
-                return;
-            }
+        Vector2 dir = Vector2.zero;
 
-            direccion.Normalize();
+        if (movingLeft)
+            dir = Vector2.left;
+        else if (movingRight)
+            dir = Vector2.right;
 
-            // Flip del sprite según la dirección X
-            if (direccion.x < 0) sr.flipX = true;        // Mirando izquierda
-            else if (direccion.x > 0) sr.flipX = false; // Mirando derecha
+        rb.linearVelocity = dir * speed;
 
-            // Movimiento usando Rigidbody2D para respetar colisiones
-            rb.MovePosition(rb.position + direccion * speed * Time.fixedDeltaTime);
+        // Flip del sprite
+        if (dir.x < 0) sr.flipX = true;
+        else if (dir.x > 0) sr.flipX = false;
+    }
+
+    // ░░░ MÉTODOS PARA LOS BOTONES ░░░
+
+    public void StartMoveLeft()
+    {
+        if (IsInputBlocked()) return;
+
+        pressStartTime = Time.time;
+        lastDir = -1;
+
+        movingLeft = true;
+        movingRight = false;
+    }
+
+    public void StartMoveRight()
+    {
+        if (IsInputBlocked()) return;
+
+        pressStartTime = Time.time;
+        lastDir = 1;
+
+        movingRight = true;
+        movingLeft = false;
+    }
+
+    public void StopMove()
+    {
+        // si la UI está bloqueando, NO damos ni siquiera el pasito
+        if (IsInputBlocked())
+        {
+            movingLeft = false;
+            movingRight = false;
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
+        float heldTime = Time.time - pressStartTime;
+
+        movingLeft = false;
+        movingRight = false;
+        rb.linearVelocity = Vector2.zero;
+
+        // Tap corto → pasito
+        if (heldTime < tapThreshold && lastDir != 0)
+        {
+            Vector2 stepDir = (lastDir < 0) ? Vector2.left : Vector2.right;
+            rb.MovePosition(rb.position + stepDir * tapStepDistance);
         }
     }
 
     // ░░░ MÉTODOS PARA captaEnemigo ░░░
 
-    // Versión sin parámetros, por si la llaman así:
-    // argelino.ActivarPersecucion();
     public void ActivarPersecucion()
     {
         ActivarPersecucion(true);
     }
 
-    // Versión con bool, por si la llaman así:
-    // argelino.ActivarPersecucion(true);  // perseguido
-    // argelino.ActivarPersecucion(false); // vuelve a normal
     public void ActivarPersecucion(bool perseguido)
     {
         speed = perseguido ? speedPerseguido : speedNormal;
-        // Aquí podrías también cambiar animaciones, colores, etc.
-        // Debug.Log("[Argelino] Persecución: " + perseguido + "  speed = " + speed);
     }
 }

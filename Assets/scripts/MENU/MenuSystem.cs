@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class MenuSystemByName : MonoBehaviour
 {
     [Header("Escenas por nombre")]
-    [SerializeField] string firstLevelName = "Juego";
+    [SerializeField] string firstLevelName = "Level 1 Edu";
     [SerializeField] string menuName = "MainMenu";
 
     [Header("Paneles")]

@@ -1,17 +1,18 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 public class DialogueUI : MonoBehaviour
 {
-    public static DialogueUI Instance;
+    public static DialogueUI Instance { get; private set; }
 
     [Header("Referencias UI")]
-    public GameObject panel;                 // Panel del diálogo (Canvas)
-    public TextMeshProUGUI dialogueText;     // Texto principal del NPC
-    public Button[] optionButtons;           // Botones de opciones (mínimo 3 recomendados)
+    public GameObject panel;                     // Panel principal del diálogo
+    public TextMeshProUGUI dialogueText;        // Texto grande de la enfermera
+    public Button[] optionButtons;              // Botones de opciones (3 en tu caso)
 
+    [Header("Datos del diálogo actual")]
+    public DialogueNode[] nodes;                // Nodos de este NPC (se configura en NPCDialogue)
     private NPCDialogue currentNPC;
     private int currentNodeIndex = -1;
 
@@ -30,12 +31,14 @@ public class DialogueUI : MonoBehaviour
         }
 
         if (panel != null)
-            panel.SetActive(false); // Oculto al inicio
+            panel.SetActive(false);
     }
 
+    // Llamado por NPCDialogue cuando haces click en un NPC
     public void ShowDialogue(NPCDialogue npc, int nodeIndex)
     {
         currentNPC = npc;
+        nodes = npc.nodes;
         currentNodeIndex = nodeIndex;
 
         if (panel != null)
@@ -46,68 +49,66 @@ public class DialogueUI : MonoBehaviour
 
     private void UpdateNode()
     {
-        if (currentNPC == null ||
-            currentNodeIndex < 0 ||
-            currentNodeIndex >= currentNPC.nodes.Length)
+        if (nodes == null || currentNodeIndex < 0 || currentNodeIndex >= nodes.Length)
         {
             EndDialogue();
             return;
         }
 
-        DialogueNode node = currentNPC.nodes[currentNodeIndex];
+        DialogueNode node = nodes[currentNodeIndex];
 
-        // Mostrar texto del NPC
-        dialogueText.text = node.text;
+        // Texto principal
+        if (dialogueText != null)
+            dialogueText.text = node.text;
 
-        // Configurar opciones
+        // Limpiar y ocultar todos los botones
         for (int i = 0; i < optionButtons.Length; i++)
         {
-            if (i < node.options.Length)
+            optionButtons[i].onClick.RemoveAllListeners();
+            optionButtons[i].gameObject.SetActive(false);
+        }
+
+        if (node.options == null) return;
+
+        // Configurar cada opción
+        for (int i = 0; i < node.options.Length && i < optionButtons.Length; i++)
+        {
+            int optionIndex = i;
+            DialogueOption opt = node.options[optionIndex];
+
+            Button btn = optionButtons[i];
+            btn.gameObject.SetActive(true);
+
+            // Buscar el TMP de este botón y ponerle el texto de la opción
+            TextMeshProUGUI label = btn.GetComponentInChildren<TextMeshProUGUI>();
+            if (label != null)
+                label.text = opt.optionText;
+
+            // Asignar qué pasa al hacer click
+            btn.onClick.AddListener(() =>
             {
-                optionButtons[i].gameObject.SetActive(true);
-
-                DialogueOption opt = node.options[i];
-
-                // Cambiar texto del botón
-                TextMeshProUGUI btnText = optionButtons[i].GetComponentInChildren<TextMeshProUGUI>();
-                if (btnText != null)
-                    btnText.text = opt.optionText;
-
-                // Capturar variables locales
-                int nextIndex = opt.nextNodeIndex;
-                float paranoiaDelta = opt.paranoiaDelta;
-
-                // Limpiar listeners anteriores
-                optionButtons[i].onClick.RemoveAllListeners();
-
-                // Agregar nueva función de click
-                optionButtons[i].onClick.AddListener(() => OnOptionSelected(nextIndex, paranoiaDelta));
-            }
-            else
-            {
-                // Si no hay más opciones, ocultar botones sobrantes
-                optionButtons[i].gameObject.SetActive(false);
-            }
+                OnOptionSelected(opt);
+            });
         }
     }
 
-    private void OnOptionSelected(int nextNodeIndex, float paranoiaDelta)
+    private void OnOptionSelected(DialogueOption option)
     {
-        // Aplicar paranoia si existe un ParanoiaManager
-        if (ParanoiaManager.Instance != null && Mathf.Abs(paranoiaDelta) > 0.01f)
+        // Aplicar paranoia EN PORCENTAJE
+        if (ParanoiaManager.Instance != null && Mathf.Abs(option.paranoiaDelta) > 0.001f)
         {
-            ParanoiaManager.Instance.AddParanoia(paranoiaDelta);
+            ParanoiaManager.Instance.AddParanoiaPercent(option.paranoiaDelta);
         }
 
-        // Cambiar al siguiente nodo o cerrar el diálogo
-        if (nextNodeIndex < 0)
+        // Ir al siguiente nodo o terminar diálogo
+        if (option.nextNodeIndex >= 0 && option.nextNodeIndex < nodes.Length)
         {
-            EndDialogue();
+            currentNodeIndex = option.nextNodeIndex;
+            UpdateNode();
         }
         else
         {
-            currentNodeIndex = nextNodeIndex;
-            UpdateNode();
+            EndDialogue();
         }
     }
 
@@ -119,10 +120,7 @@ public class DialogueUI : MonoBehaviour
         currentNPC = null;
         currentNodeIndex = -1;
 
-        // Limpiar listeners por seguridad
-        foreach (Button b in optionButtons)
-        {
+        foreach (var b in optionButtons)
             b.onClick.RemoveAllListeners();
-        }
     }
 }
