@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using System.Collections;
 
 public class MenuController : MonoBehaviour
 {
@@ -9,19 +11,28 @@ public class MenuController : MonoBehaviour
     public GameObject panelAjustes;
     public GameObject panelCreditos;
     public GameObject panelArchivo;
+
+    [Header("Pantalla de Carga")]
+    public GameObject panelLoading;  
+    public Image loadingImage;           
+    public Sprite[] loadingFrames;       
+    public float frameRate = 0.1f;       
+
     void Start()
     {
-        // Al iniciar, solo se muestra la pantalla principal
         panelPrincipal.SetActive(true);
         panelMenuPrincipal.SetActive(false);
         panelAjustes.SetActive(false);
         panelCreditos.SetActive(false);
         panelArchivo.SetActive(false);
+
+        if (panelLoading) panelLoading.SetActive(false);
     }
 
-    //  Botón "Iniciar"
+    // Botón "Iniciar"mm
     public void AbrirMenu()
     {
+        Debug.Log("Menu abierto");
         panelPrincipal.SetActive(false);
         panelMenuPrincipal.SetActive(true);
         panelAjustes.SetActive(false);
@@ -29,7 +40,7 @@ public class MenuController : MonoBehaviour
         panelArchivo.SetActive(false);
     }
 
-    //  Botón "Ajustes"
+    // Botón "Ajustes"
     public void AbrirAjustes()
     {
         panelPrincipal.SetActive(false);
@@ -39,7 +50,7 @@ public class MenuController : MonoBehaviour
         panelArchivo.SetActive(false);
     }
 
-    //  Botón "Créditos"
+    // Botón "Créditos"
     public void AbrirCreditos()
     {
         panelPrincipal.SetActive(false);
@@ -49,7 +60,7 @@ public class MenuController : MonoBehaviour
         panelArchivo.SetActive(false);
     }
 
-    //  Botón "Archivo"
+    // Botón "Archivo"
     public void AbrirArchivo()
     {
         panelPrincipal.SetActive(false);
@@ -58,20 +69,66 @@ public class MenuController : MonoBehaviour
         panelCreditos.SetActive(false);
         panelArchivo.SetActive(true);
     }
+
+    // INICIAR JUEGO CON PANTALLA DE CARGA
     public void IrAlJuego()
     {
         Debug.Log("Cargando escena de juego...");
-        SceneManager.LoadScene(2); // Carga la escena con índice 2
+        HideAllPanels();
+        panelLoading.SetActive(true);
+
+        StartCoroutine(PlayLoadingAnimation());
+        StartCoroutine(LoadGameAsync(1)); // Carga la escena con índice 2
     }
 
-    //  Botón "Volver"
+    IEnumerator LoadGameAsync(int sceneIndex)
+    {
+        AsyncOperation load = SceneManager.LoadSceneAsync(sceneIndex);
+        load.allowSceneActivation = false;
+
+        float timer = 0f;
+        float minTime = 6.7f;
+
+        while (!load.isDone)
+        {
+            timer += Time.deltaTime;
+
+            if (load.progress >= 0.9f && timer >= minTime)
+            {
+                load.allowSceneActivation = true;
+            }
+            yield return null;
+        }
+    }
+
+    //  Animación de sprites (GIF)
+    IEnumerator PlayLoadingAnimation()
+    {
+        int frame = 0;
+
+        while (panelLoading.activeSelf)
+        {
+            loadingImage.sprite = loadingFrames[frame];
+            frame = (frame + 1) % loadingFrames.Length;
+
+            yield return new WaitForSeconds(frameRate);
+        }
+    }
+
+    // Botón "Volver"
     public void VolverAlMenu()
     {
-        panelPrincipal.SetActive(false);
+        HideAllPanels();
         panelMenuPrincipal.SetActive(true);
+    }
+
+    // Ocultar todo
+    void HideAllPanels()
+    {
+        panelPrincipal.SetActive(false);
+        panelMenuPrincipal.SetActive(false);
         panelAjustes.SetActive(false);
         panelCreditos.SetActive(false);
         panelArchivo.SetActive(false);
     }
-    
 }
