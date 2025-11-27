@@ -20,6 +20,8 @@ public class ArgelinoController : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer sr;
 
+    private Animator anim;
+
     // estados de movimiento continuo
     private bool movingLeft = false;
     private bool movingRight = false;
@@ -32,6 +34,8 @@ public class ArgelinoController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
+
+        anim = GetComponent<Animator>();
 
         speed = speedNormal;      // Arranca con velocidad normal
     }
@@ -66,6 +70,7 @@ public class ArgelinoController : MonoBehaviour
         if (IsInputBlocked())
         {
             rb.linearVelocity = Vector2.zero;
+            anim.SetBool("Moving", false);
             return;
         }
 
@@ -78,10 +83,15 @@ public class ArgelinoController : MonoBehaviour
 
         rb.linearVelocity = dir * speed;
 
-        // Flip del sprite
+        // --- ANIMACIÓN ---
+        bool isMoving = dir != Vector2.zero;
+        anim.SetBool("Moving", isMoving);
+
+        // --- FLIP ---
         if (dir.x < 0) sr.flipX = true;
         else if (dir.x > 0) sr.flipX = false;
     }
+
 
     // ░░░ MÉTODOS PARA LOS BOTONES ░░░
 
@@ -131,6 +141,12 @@ public class ArgelinoController : MonoBehaviour
             rb.MovePosition(rb.position + stepDir * tapStepDistance);
         }
     }
+    public void Atacar()
+    {
+        anim.SetTrigger("AttackTrigger");
+        Debug.Log("Ataque ejecutado");
+    }
+ 
 
     // ░░░ MÉTODOS PARA captaEnemigo ░░░
 

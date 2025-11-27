@@ -1,34 +1,28 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PuertaBloqueadora : MonoBehaviour
+public class PuertaTapSimple : MonoBehaviour
 {
-    [Header("Llaves necesarias para abrir")]
     public int llavesNecesarias = 1;
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnMouseDown()
     {
-        // Verifica que sea el jugador
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            if (Data.llave >= llavesNecesarias && collision.gameObject.CompareTag("Player"))
-            {
-            Debug.Log("¡Puerta abierta!");
-                    Destroy(gameObject); // Destruye la puerta(por si ocupo para otra parte del codigo :D )
-             Debug.Log("¡Has salido del nivel!");
-                
-             int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
-                SceneManager.LoadScene(currentSceneIndex + 1); // Asegúrate de tener el nivel "NextLevel" en tus escenas
+        Debug.Log("Click detectado en la puerta");
 
-                Data.llave -= llavesNecesarias; // Resta las llaves usadas
-            }
-            else
-            {
-                Debug.Log("Necesitas " + llavesNecesarias + " llave(s) para abrir esta puerta.");
-                // Opcional: puedes reproducir un sonido de "cerrado"
-            }
+        if (Data.llave >= llavesNecesarias)
+        {
+            AbrirPuerta();
         }
+        else
+        {
+            Debug.Log("No tienes suficientes llaves");
         }
     }
 
- 
+    void AbrirPuerta()
+    {
+        Debug.Log("ABRIENDO PUERTA…");
+        int index = SceneManager.GetActiveScene().buildIndex;
+        SceneManager.LoadScene(index + 1);
+    }
+}
