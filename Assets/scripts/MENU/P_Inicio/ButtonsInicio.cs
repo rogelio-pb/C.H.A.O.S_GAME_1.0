@@ -120,9 +120,11 @@ public class MenuController : MonoBehaviour
         HideAllPanels();
         panelMenuPrincipal.SetActive(true);
     }
+  
+
 
     // Ocultar todo
-    void HideAllPanels()
+    void HideAllPanels()//Panel que oculta todos los demas
     {
         panelPrincipal.SetActive(false);
         panelMenuPrincipal.SetActive(false);

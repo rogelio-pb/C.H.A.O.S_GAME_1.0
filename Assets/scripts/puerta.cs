@@ -11,7 +11,7 @@ public class PuertaTapSimple : MonoBehaviour
 
         if (Data.llave >= llavesNecesarias)
         {
-            AbrirPuerta();
+            IrAEscena3();
         }
         else
         {
@@ -19,10 +19,14 @@ public class PuertaTapSimple : MonoBehaviour
         }
     }
 
-    void AbrirPuerta()
+    void IrAEscena3()
     {
-        Debug.Log("ABRIENDO PUERTA…");
-        int index = SceneManager.GetActiveScene().buildIndex;
-        SceneManager.LoadScene(index + 1);
+        Debug.Log("CAMBIANDO A ESCENA 3…");
+
+        // *** Muy importante ***
+        PlayerPrefs.SetInt("viene_de_otra_escena", 1);
+        PlayerPrefs.Save();
+
+        SceneManager.LoadScene(3);  //  Tu escena destino
     }
 }
