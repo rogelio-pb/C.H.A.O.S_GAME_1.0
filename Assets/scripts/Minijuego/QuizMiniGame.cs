@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class QuizMiniGame : MonoBehaviour
@@ -10,8 +12,8 @@ public class QuizMiniGame : MonoBehaviour
     public TextMeshProUGUI questionText;     // Texto de la pregunta
     public TextMeshProUGUI timerText;        // Cronómetro
     public TextMeshProUGUI progressText;     // "Pregunta 3/20"
-    public TextMeshProUGUI statusText;       // Mensaje final
-    public TextMeshProUGUI rewardText;       // Mensaje de la llave / nombre
+    public TextMeshProUGUI statusText;       // Mensaje final pequeño
+    public TextMeshProUGUI rewardText;       // Mensaje pequeño de recompensa
 
     [Header("Botones de respuesta")]
     public Button[] answerButtons;           // 3 o 4 botones
@@ -33,6 +35,25 @@ public class QuizMiniGame : MonoBehaviour
     public ItemData llaveItem;           // tu item "llave"
     public string nombreJugador = "ARGELINO";
 
+    [Header("Feedback visual")]
+    [Tooltip("Palomita verde que aparece 1 segundo cuando respondes bien")]
+    public GameObject correctMark;       // palomita verde (Image u otro)
+    public float tiempoFeedback = 1f;    // tiempo que se muestra la palomita
+
+    [Header("Pantalla grande de llave")]
+    [Tooltip("Panel que muestra la llave en grande (debe estar desactivado por defecto)")]
+    public GameObject keyPanel;          // panel grande con imagen de llave
+    public TextMeshProUGUI keyPanelText; // texto grande: ¡HAS OBTENIDO LLAVE!
+    public string textoHasObtenidoLlave = "¡HAS OBTENIDO LLAVE!";
+
+    [Header("Salida al terminar")]
+    [Tooltip("Si se activa, al terminar el quiz se carga esta escena")]
+    public bool cargarEscenaAlTerminar = false;
+    public string nombreEscenaNivel;     // nombre de la escena (en Build Settings)
+
+    // Estado interno
+    public bool IsRunning { get; private set; } = false;
+
     private int currentQuestionIndex = 0;
     private float tiempoRestante = 0f;
     private bool esperandoRespuesta = false;
@@ -43,15 +64,20 @@ public class QuizMiniGame : MonoBehaviour
         if (panel != null) panel.SetActive(false);
         if (statusText != null) statusText.text = "";
         if (rewardText != null) rewardText.text = "";
+
+        if (correctMark != null) correctMark.SetActive(false);
+        if (keyPanel != null) keyPanel.SetActive(false);
     }
 
     void Update()
     {
-        if (!panel.activeSelf || !esperandoRespuesta) return;
+        if (!IsRunning || panel == null || !panel.activeSelf || !esperandoRespuesta)
+            return;
 
         tiempoRestante -= Time.deltaTime;
+
         if (timerText != null)
-            timerText.text = tiempoRestante.ToString("0");
+            timerText.text = Mathf.Ceil(tiempoRestante).ToString("0");
 
         if (tiempoRestante <= 0f)
         {
@@ -62,21 +88,28 @@ public class QuizMiniGame : MonoBehaviour
     // Llamar para iniciar el minijuego
     public void StartQuiz()
     {
+        if (IsRunning)
+            return; // ya está abierto
+
         if (questions == null || questions.Count == 0)
         {
             Debug.LogWarning("[QuizMiniGame] No hay preguntas configuradas.");
             return;
         }
 
+        IsRunning = true;
         currentQuestionIndex = 0;
         respuestasCorrectasEnIntento = 0;
 
         if (statusText != null) statusText.text = "";
         if (rewardText != null) rewardText.text = "";
 
+        if (correctMark != null) correctMark.SetActive(false);
+        if (keyPanel != null) keyPanel.SetActive(false);
+
         if (panel != null) panel.SetActive(true);
 
-        // Bloquear movimiento del player + marcar bloqueo de input
+        // Bloquear movimiento del player
         if (player != null)
         {
             player.inputBlockedByMiniGame = true;
@@ -87,6 +120,7 @@ public class QuizMiniGame : MonoBehaviour
 
     private void CargarPreguntaActual()
     {
+        // Si ya pasamos todas las preguntas → terminar quiz
         if (currentQuestionIndex >= questions.Count)
         {
             TerminarQuiz();
@@ -130,9 +164,12 @@ public class QuizMiniGame : MonoBehaviour
             TextMeshProUGUI btnText = answerButtons[i].GetComponentInChildren<TextMeshProUGUI>();
             if (btnText != null) btnText.text = textoOpcion;
 
+            // Capturamos el valor de esCorrecta en la lambda
+            bool respuestaCorrecta = esCorrecta;
+
             answerButtons[i].onClick.AddListener(() =>
             {
-                OnAnswerSelected(esCorrecta);
+                OnAnswerSelected(respuestaCorrecta);
             });
         }
 
@@ -145,6 +182,7 @@ public class QuizMiniGame : MonoBehaviour
         if (!esperandoRespuesta) return;
         esperandoRespuesta = false;
 
+        // Paranoia + contador de correctas
         if (esCorrecta)
         {
             respuestasCorrectasEnIntento++;
@@ -158,8 +196,8 @@ public class QuizMiniGame : MonoBehaviour
                 ParanoiaManager.Instance.AddParanoiaPercent(paranoiaMala);  // +2%
         }
 
-        currentQuestionIndex++;
-        CargarPreguntaActual();
+        // Feedback de palomita y luego siguiente pregunta
+        StartCoroutine(FeedbackAndNextQuestion(esCorrecta));
     }
 
     private void TiempoAgotado()
@@ -169,6 +207,26 @@ public class QuizMiniGame : MonoBehaviour
 
         if (ParanoiaManager.Instance != null)
             ParanoiaManager.Instance.AddParanoiaPercent(paranoiaTiempo);   // +0.5%
+
+        // Aquí no hay palomita, solo pasar a la siguiente después de un pequeño delay
+        StartCoroutine(FeedbackAndNextQuestion(false));
+    }
+
+    private IEnumerator FeedbackAndNextQuestion(bool esCorrecta)
+    {
+        // Desactivar interacción para que no se puedan spamear clicks
+        SetButtonsInteractable(false);
+
+        if (esCorrecta && correctMark != null)
+            correctMark.SetActive(true);
+
+        yield return new WaitForSeconds(tiempoFeedback);
+
+        if (correctMark != null)
+            correctMark.SetActive(false);
+
+        // Reactivamos (la siguiente pregunta los volverá a configurar)
+        SetButtonsInteractable(true);
 
         currentQuestionIndex++;
         CargarPreguntaActual();
@@ -186,8 +244,10 @@ public class QuizMiniGame : MonoBehaviour
                 statusText.text = $"Has contestado bien {respuestasCorrectasEnIntento}/{questions.Count}.";
         }
 
-        // Si contestó todas bien → dar llave
-        if (darLlaveSiCompleta && respuestasCorrectasEnIntento >= questions.Count)
+        bool completoPerfecto = (respuestasCorrectasEnIntento >= questions.Count);
+
+        // Si contestó todas bien → dar llave + mostrar pantalla grande
+        if (darLlaveSiCompleta && completoPerfecto)
         {
             if (Inventory.Instance != null && llaveItem != null)
             {
@@ -198,18 +258,60 @@ public class QuizMiniGame : MonoBehaviour
             {
                 rewardText.text = $"Has obtenido la llave, <b>{nombreJugador}</b>.";
             }
+
+            if (keyPanel != null)
+            {
+                keyPanel.SetActive(true);
+
+                if (keyPanelText != null)
+                    keyPanelText.text = textoHasObtenidoLlave.ToUpper();
+            }
         }
 
-        Invoke(nameof(CerrarQuiz), 1.5f);
+        // Cerrar quiz y desbloquear player (y opcionalmente cambiar de escena)
+        StartCoroutine(CerrarLuegoDeDelay());
     }
 
-    public void CerrarQuiz()
+    private IEnumerator CerrarLuegoDeDelay()
     {
-        if (panel != null) panel.SetActive(false);
+        yield return new WaitForSeconds(1.5f);
+
+        if (panel != null)
+            panel.SetActive(false);
 
         if (player != null)
-        {
             player.inputBlockedByMiniGame = false;
+
+        IsRunning = false;
+
+        // Opcional: regresar al nivel cargando la escena
+        if (cargarEscenaAlTerminar && !string.IsNullOrEmpty(nombreEscenaNivel))
+        {
+            SceneManager.LoadScene(nombreEscenaNivel);
+        }
+    }
+
+    public void CerrarQuizManual()
+    {
+        // Por si quieres cerrar desde un botón "Salir"
+        StopAllCoroutines();
+
+        if (panel != null)
+            panel.SetActive(false);
+
+        if (player != null)
+            player.inputBlockedByMiniGame = false;
+
+        IsRunning = false;
+    }
+
+    private void SetButtonsInteractable(bool value)
+    {
+        if (answerButtons == null) return;
+        foreach (var btn in answerButtons)
+        {
+            if (btn != null)
+                btn.interactable = value;
         }
     }
 }
