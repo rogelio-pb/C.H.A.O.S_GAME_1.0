@@ -1,115 +1,110 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Events;
 
 public class ParanoiaManager : MonoBehaviour
 {
-    public static ParanoiaManager Instance;
+    public static ParanoiaManager Instance { get; private set; }
 
-    [Header("Paranoia")]
-    [Tooltip("Valor máximo de paranoia. Normalmente 100 = 100%.")]
-    public float maxParanoia = 100f;
+    [Header("Config")]
+    [Tooltip("La paranoia máxima. 25 equivale a 100% en la UI.")]
+    public float maxParanoiaPercent = 25f;
 
-    [Tooltip("Paranoia actual en el rango 0–100.")]
-    [Range(0f, 100f)]
-    public float currentParanoia = 0f;
+    [Tooltip("Paranoia inicial al empezar el juego.")]
+    public float startParanoiaPercent = 0f;
 
     [Header("UI")]
-    [Tooltip("Slider de la barra de paranoia en el HUD.")]
-    public Slider paranoiaSlider;
+    [Tooltip("Imagen de la barra / jeringa (tipo Filled).")]
+    public Image paranoiaFillImage;
 
-    [Tooltip("Texto que muestra el porcentaje de paranoia, ej. '35%'.")]
+    [Tooltip("Texto que muestra el porcentaje (0% - 100%).")]
     public TextMeshProUGUI paranoiaText;
 
-    [Header("Umbrales (solo para efectos opcionales)")]
-    public float alertThreshold = 50f;   // p.ej. empieza a haber efectos visuales
-    public float crisisThreshold = 80f;  // p.ej. paranoia muy alta
+    [Header("Game Over")]
+    [Tooltip("Se llama cuando la paranoia llega al máximo (25).")]
+    public UnityEvent onParanoiaMax;
+
+    [HideInInspector]
+    public float currentParanoiaPercent;   // escala 0–25
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            // Opcional: DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        if (paranoiaSlider != null)
-        {
-            paranoiaSlider.minValue = 0f;
-            paranoiaSlider.maxValue = maxParanoia;
-            paranoiaSlider.value = currentParanoia;
-        }
-
-        UpdateUI();
+        Instance = this;
+        // Si quieres que sobreviva entre escenas:
+        // DontDestroyOnLoad(gameObject);
     }
 
-    // ───────────────── API PRINCIPAL ─────────────────
-
-    /// <summary>
-    /// Suma/resta paranoia en valores absolutos (0–100).
-    /// Normalmente usarás AddParanoiaPercent en su lugar.
-    /// </summary>
-    public void AddParanoia(float amount)
+    private void Start()
     {
-        currentParanoia = Mathf.Clamp(currentParanoia + amount, 0f, maxParanoia);
-        UpdateUI();
-        CheckThresholds();
+        SetParanoia(startParanoiaPercent);
     }
 
+    // ──────────────── API PÚBLICA ────────────────
+
     /// <summary>
-    /// Suma/resta paranoia en PORCENTAJE. Ej: 2 = +2%, -1.5 = -1.5%.
+    /// Suma (o resta) paranoia en "puntos".
+    /// Tus otros scripts llaman a esto: AddParanoiaPercent(+/-x).
     /// </summary>
-    public void AddParanoiaPercent(float percent)
+    public void AddParanoiaPercent(float delta)
     {
-        float amount = maxParanoia * (percent / 100f);
-        AddParanoia(amount);
+        SetParanoia(currentParanoiaPercent + delta);
     }
 
     /// <summary>
-    /// Fija la paranoia directamente en un valor concreto (0–100).
+    /// Fija directamente la paranoia.
     /// </summary>
     public void SetParanoia(float value)
     {
-        currentParanoia = Mathf.Clamp(value, 0f, maxParanoia);
-        UpdateUI();
-        CheckThresholds();
+        float oldValue = currentParanoiaPercent;
+
+        currentParanoiaPercent = Mathf.Clamp(value, 0f, maxParanoiaPercent);
+
+        float normalized01 = (maxParanoiaPercent <= 0f)
+            ? 0f
+            : currentParanoiaPercent / maxParanoiaPercent;
+
+        UpdateUI(normalized01);
+
+        // Si acabamos de llegar al máximo → perder
+        if (oldValue < maxParanoiaPercent && currentParanoiaPercent >= maxParanoiaPercent)
+        {
+            HandleParanoiaMax();
+        }
     }
 
-    // ───────────────── LÓGICA INTERNA ─────────────────
+    // ──────────────── UI ────────────────
 
-    private void UpdateUI()
+    private void UpdateUI(float normalized01)
     {
-        if (paranoiaSlider != null)
-            paranoiaSlider.value = currentParanoia;
+        // Barra (fillAmount 0–1)
+        if (paranoiaFillImage != null)
+            paranoiaFillImage.fillAmount = normalized01;
 
+        // Texto (0–100%)
         if (paranoiaText != null)
-            paranoiaText.text = $"{currentParanoia:0}%";
+        {
+            int displayPercent = Mathf.RoundToInt(normalized01 * 100f);
+            paranoiaText.text = displayPercent.ToString() + "%";
+        }
     }
 
-    private void CheckThresholds()
-    {
-        // Aquí puedes disparar efectos especiales según la paranoia.
-        // Solo dejo ganchos por si luego quieres usarlos.
+    // ──────────────── GAME OVER ────────────────
 
-        if (currentParanoia >= crisisThreshold)
-        {
-            // Modo crisis
-            // Debug.Log("[PARANOIA] CRISIS");
-        }
-        else if (currentParanoia >= alertThreshold)
-        {
-            // Modo alerta
-            // Debug.Log("[PARANOIA] ALERTA");
-        }
-        else
-        {
-            // Modo normal
-            // Debug.Log("[PARANOIA] CALMA");
-        }
+    private void HandleParanoiaMax()
+    {
+        Debug.Log("[ParanoiaManager] Paranoia máxima alcanzada. Jugador pierde.");
+
+        if (onParanoiaMax != null)
+            onParanoiaMax.Invoke();
+        // Aquí puedes conectar en el Inspector:
+        // - GameManager.GameOver()
+        // - Cambiar de escena, etc.
     }
 }

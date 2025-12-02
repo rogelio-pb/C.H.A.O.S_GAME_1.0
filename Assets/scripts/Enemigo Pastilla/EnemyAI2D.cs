@@ -16,11 +16,13 @@ public class EnemyAI2D : MonoBehaviour
     public float velocidadPatrulla = 2f;
     public float velocidadPersecucion = 3f;
 
-    [Header("Detecci�n / Ataque")]
+    [Header("Detección / Ataque")]
     public float radioDeteccion = 5f;
     public float radioAtaque = 1.2f;
     public float tiempoEntreAtaques = 1f;
-    public int danioAlPlayer = 10;
+
+    [Tooltip("Cuánta paranoia aumenta cada golpe del enemigo (en la escala 0–25).")]
+    public float paranoiaDamage = 2f;     // antes era danioAlPlayer = 10;
 
     private float ultimoTiempoAtaque;
 
@@ -44,7 +46,7 @@ public class EnemyAI2D : MonoBehaviour
 
         float distanciaAlPlayer = Vector2.Distance(transform.position, player.position);
 
-        // Cambiar estado seg�n distancia
+        // Cambiar estado según distancia
         if (distanciaAlPlayer <= radioAtaque)
         {
             estadoActual = EstadoEnemy.Atacando;
@@ -86,13 +88,13 @@ public class EnemyAI2D : MonoBehaviour
         Vector2 direccion = (destinoActual.position - transform.position).normalized;
         rb.linearVelocity = direccion * velocidadPatrulla;
 
-        // Si ya lleg� cerca del punto de destino, cambiarlo
+        // Si ya llegó cerca del punto de destino, cambiarlo
         if (Vector2.Distance(transform.position, destinoActual.position) < 0.1f)
         {
             destinoActual = (destinoActual == puntoA) ? puntoB : puntoA;
         }
 
-        // Opcional: voltear sprite seg�n direcci�n
+        // Opcional: voltear sprite según dirección
         if (rb.linearVelocity.x != 0)
         {
             Vector3 scale = transform.localScale;
@@ -117,7 +119,7 @@ public class EnemyAI2D : MonoBehaviour
 
     private void Atacar()
     {
-        // Al atacar, puedes decidir que se quede quieto o siga pegado al player
+        // Al atacar, se queda quieto
         rb.linearVelocity = Vector2.zero;
 
         if (Time.time - ultimoTiempoAtaque >= tiempoEntreAtaques)
@@ -126,12 +128,15 @@ public class EnemyAI2D : MonoBehaviour
             float distancia = Vector2.Distance(transform.position, player.position);
             if (distancia <= radioAtaque + 0.2f)
             {
-                // Hacer da�o al player
-                PlayerHealth ph = player.GetComponent<PlayerHealth>();
-                if (ph != null)
+                // ⚠️ NUEVO: en lugar de bajar vida, subimos paranoia
+                if (ParanoiaManager.Instance != null)
                 {
-                    ph.TakeDamage(danioAlPlayer);
-                    Debug.Log("[ENEMY] Atacando al player, da�o: " + danioAlPlayer);
+                    ParanoiaManager.Instance.AddParanoiaPercent(paranoiaDamage);
+                    Debug.Log("[ENEMY] Atacando al player, paranoia +" + paranoiaDamage);
+                }
+                else
+                {
+                    Debug.LogWarning("[ENEMY] No hay ParanoiaManager en la escena.");
                 }
 
                 ultimoTiempoAtaque = Time.time;
@@ -141,7 +146,7 @@ public class EnemyAI2D : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // Solo para ver en la escena los radios de detecci�n/ataque
+        // Solo para ver en la escena los radios de detección/ataque
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, radioDeteccion);
 
