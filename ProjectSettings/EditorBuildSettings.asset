@@ -20,5 +20,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ScenesGame/MiniGame1.unity
     guid: 3b2ae65e7288f88489eba2f7eef4307b
+  - enabled: 1
+    path: Assets/Scenes/ScenesGame/PeleaBoss.unity
+    guid: 73529f6b7690f6141b21fa577e91f5f2
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

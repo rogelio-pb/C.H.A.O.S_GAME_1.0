@@ -1,10 +1,10 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-public class RevistaAbrePanel : MonoBehaviour
+public class AbrirReceta : MonoBehaviour
 {
-    [Header("Panel de Revista")]
-    public RevistasUI revistasUI;
+    [Header("Panel de receta")]
+    public RecetaUI RecetaUI;
 
     [Header("Detección del Player")]
     public string playerTag = "Player";
@@ -36,25 +36,23 @@ public class RevistaAbrePanel : MonoBehaviour
 
     private void OnMouseDown()
     {
-        // Si no hay revistas, error
-        if (revistasUI == null)
+        if (RecetaUI == null)
         {
-            Debug.LogError("RevistasUI no está asignado.");
+            Debug.LogError("RecetaUI no está asignado.");
             return;
         }
 
-        // Si hay un player asignado, verificar distancia
         if (player != null)
         {
             float distancia = Vector2.Distance(player.position, transform.position);
             if (distancia > distanciaMaximaTouch)
             {
-                Debug.Log("Player muy lejos para abrir revista.");
+                Debug.Log("Player muy lejos para abrir receta.");
                 return;
             }
         }
 
-        revistasUI.AbrirRevista();
+        RecetaUI.AbrirReceta();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -74,8 +72,10 @@ public class RevistaAbrePanel : MonoBehaviour
         for (int i = 0; i < targetSprites.Length; i++)
         {
             if (targetSprites[i] == null) continue;
+
             Color c = originalColors[i] * highlightIntensity;
             c.a = originalColors[i].a;
+
             targetSprites[i].color = c;
         }
     }
@@ -85,6 +85,7 @@ public class RevistaAbrePanel : MonoBehaviour
         for (int i = 0; i < targetSprites.Length; i++)
         {
             if (targetSprites[i] == null) continue;
+
             targetSprites[i].color = originalColors[i];
         }
     }

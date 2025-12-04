@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class CrackZone : MonoBehaviour
 {
+    [Tooltip("Paranoia por grietas")]
+    public float paranoiaDamage = 1.5f;
+
     public float requiredTime = 3f;
     private float timer = 0f;
 
@@ -31,7 +34,7 @@ public class CrackZone : MonoBehaviour
             if (timer >= requiredTime)
             {
                 // Aumentar paranoia
-               //Aui va el aumento de paranoia 
+                ParanoiaManager.Instance.AddParanoiaPercent(paranoiaDamage);
                 Debug.Log("Paranoia +5 (grieta)");
 
                 timer = 0f; // evitar que se repita sin salir
