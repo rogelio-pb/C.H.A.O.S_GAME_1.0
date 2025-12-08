@@ -176,6 +176,12 @@ public class QuizMiniGame : MonoBehaviour
         tiempoRestante = tiempoPorPregunta;
         esperandoRespuesta = true;
     }
+    //==== boton cerrar quiz manual ====
+    public void BotonCerrarQuiz()
+    {
+        CerrarQuizManual();
+    }
+
 
     private void OnAnswerSelected(bool esCorrecta)
     {

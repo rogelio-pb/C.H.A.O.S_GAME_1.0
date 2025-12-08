@@ -1,30 +1,36 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class RespawnJugador : MonoBehaviour
+public class PlayerRespawn : MonoBehaviour
 {
-    private void Start()
+    public Vector2 posicionInicial;   // posición donde debe aparecer si NO hay checkpoint
+
+    void Start()
     {
-        // Solo respawnear si vienes de otra escena
-        if (SceneManager.GetActiveScene().buildIndex == 0 && PlayerPrefs.GetInt("viene_de_otra_escena", 0) == 1)
+        // ¿Hay un checkpoint guardado?
+        if (PlayerPrefs.GetInt("tiene_checkpoint", 0) == 1)
         {
-            if (PlayerPrefs.GetInt("checkpoint_activado", 0) == 1)
+            int escenaGuardada = PlayerPrefs.GetInt("respawn_scene");
+
+            // Si estamos en la misma escena donde está el checkpoint
+            if (escenaGuardada == SceneManager.GetActiveScene().buildIndex)
             {
                 float x = PlayerPrefs.GetFloat("respawn_x");
                 float y = PlayerPrefs.GetFloat("respawn_y");
 
-                transform.position = new Vector3(x, transform.position.z);
-
-                Debug.Log("RESPAWN EN CHECKPOINT");
-            }
-            else
-            {
-                Debug.Log("NO HAY CHECKPOINT — inicia desde el principio");
+                transform.position = new Vector2(x, y);
+                return;
             }
         }
 
-        // Ya estás en la escena del nivel, reset
-        PlayerPrefs.SetInt("viene_de_otra_escena", 0);
-        PlayerPrefs.Save();
+        // Si no hay checkpoint o estamos en otra escena  aparece en el inicio
+        transform.position = posicionInicial;
+    }
+
+    // Función para reaparecer cuando "muere"
+    public void Morir()
+    {
+        Scene escenaActual = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(escenaActual.buildIndex);  // recargar escena
     }
 }

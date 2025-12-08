@@ -20,6 +20,15 @@ public class MenuController : MonoBehaviour
 
     void Start()
     {
+        /*Al iniciar el juego, reiniciar el checkpoint
+       * PlayerPrefs.DeleteKey("tiene_checkpoint");
+        *PlayerPrefs.DeleteKey("respawn_x");
+        PlayerPrefs.DeleteKey("respawn_y");
+        PlayerPrefs.DeleteKey("respawn_scene");
+        PlayerPrefs.Save();
+        Debug.Log("Checkpoint reiniciado al iniciar el juego.");
+        * Al iniciar, mostrar solo el panel principal
+        */
         panelPrincipal.SetActive(true);
         panelMenuPrincipal.SetActive(false);
         panelAjustes.SetActive(false);
@@ -68,6 +77,38 @@ public class MenuController : MonoBehaviour
         panelCreditos.SetActive(false);
         panelArchivo.SetActive(true);
     }
+    public void NuevaPartida()
+    {
+        SaveSystem.ClearData();  // Borra checkpoint y progreso
+
+        PlayerPrefs.SetInt("tiene_checkpoint", 0);
+        PlayerPrefs.Save();
+
+        // Cargar escena de inicio (0 o la que uses)
+        IrAlJuego();
+    }
+
+    public void ContinuarPartida()
+    {
+        SaveSystem.LoadGame();
+
+        if (PlayerPrefs.GetInt("tiene_checkpoint", 0) == 1)
+        {
+            int scene = PlayerPrefs.GetInt("respawn_scene");
+            SceneManager.LoadScene(scene);
+            Debug.Log("Cargando escena de juego...");
+            HideAllPanels();
+            panelLoading.SetActive(true);
+
+            StartCoroutine(PlayLoadingAnimation());
+        }
+        else
+        {
+            Debug.Log("No hay checkpoint guardado. Iniciando nuevo.");
+            NuevaPartida();
+        }
+    }
+
 
     //  INICIAR JUEGO CON PANTALLA DE CARGA
     public void IrAlJuego()
@@ -77,7 +118,7 @@ public class MenuController : MonoBehaviour
         panelLoading.SetActive(true);
 
         StartCoroutine(PlayLoadingAnimation());
-        StartCoroutine(LoadGameAsync(2)); // Carga la escena con índice 2
+        StartCoroutine(LoadGameAsync(1)); // Carga la escena con índice 2
     }
 
     IEnumerator LoadGameAsync(int sceneIndex)

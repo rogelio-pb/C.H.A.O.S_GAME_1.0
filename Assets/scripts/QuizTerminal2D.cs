@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Collider2D))]
 public class QuizTerminal2D : MonoBehaviour
@@ -45,6 +46,8 @@ public class QuizTerminal2D : MonoBehaviour
     // CLICK / TAP SOBRE LA TERMINAL (PC y MÓVIL)
     private void OnMouseDown()
     {
+        if (EventSystem.current.IsPointerOverGameObject())
+            return;
         if (quizMiniGame == null)
         {
             Debug.LogWarning("[QuizTerminal2D] Falta asignar QuizMiniGame.");

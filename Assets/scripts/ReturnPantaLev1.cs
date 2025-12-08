@@ -8,7 +8,7 @@ public class ReturnPJuego : MonoBehaviour
         {
          
      
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
 
         Debug.Log("Cargando escena de juego...");
     }

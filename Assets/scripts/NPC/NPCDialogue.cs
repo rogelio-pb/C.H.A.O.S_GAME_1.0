@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.EventSystems; //  IMPORTANTE
+
 
 [RequireComponent(typeof(Collider2D))]
 public class NPCDialogue : MonoBehaviour
@@ -9,6 +11,8 @@ public class NPCDialogue : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (EventSystem.current.IsPointerOverGameObject())
+            return;
         Debug.Log("[NPCDialogue] OnMouseDown en: " + name);
 
         if (DialogueUI.Instance == null)

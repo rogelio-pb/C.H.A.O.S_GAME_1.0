@@ -287,6 +287,13 @@ public class RorschachMiniGame : MonoBehaviour
         }
     }
 
+    // ==== boton cerrar ====
+    public void OnCloseButton()
+    {
+        if (!IsRunning) return;
+        CerrarMiniGame();
+    }
+
     private IEnumerator FeedbackCorrectoYContinuar()
     {
         if (greenCheck != null) greenCheck.SetActive(true);
