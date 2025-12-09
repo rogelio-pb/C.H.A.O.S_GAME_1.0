@@ -1,17 +1,15 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using System.Collections;     // NECESARIO PARA IEnumerator
+using System.Collections;
+using TMPro; // 👈 IMPORTANTE
 
 public class BossFightManager : MonoBehaviour
 {
     [Header("Player")]
-    public ArgelinoController player;    // ← TU CONTROLADOR REAL
-    public float paranoia = 0f;
-    public Image paranoiaBar;
+    public ArgelinoController player;
 
     [Header("Objetos que caen")]
-    public GameObject[] objetos; // 3 prefabs
+    public GameObject[] objetos;
     public float spawnInterval = 1.2f;
     public Transform spawnAreaLeft;
     public Transform spawnAreaRight;
@@ -21,9 +19,14 @@ public class BossFightManager : MonoBehaviour
     private float timer;
     private bool isFighting = true;
 
+    [Header("UI")]
+    [Tooltip("Texto que muestra el tiempo restante")]
+    public TextMeshProUGUI timerText;   // 👈 NUEVO
+
     void Start()
     {
         timer = fightDuration;
+        UpdateTimerUI(); // 👈 Muestra el tiempo inicial
         StartCoroutine(SpawnRutina());
     }
 
@@ -33,13 +36,15 @@ public class BossFightManager : MonoBehaviour
 
         timer -= Time.deltaTime;
 
+        UpdateTimerUI(); // 👈 Se actualiza cada frame
+
         if (timer <= 0f)
         {
             WinFight();
         }
     }
 
-    IEnumerator SpawnRutina()   // ← YA FUNCIONA
+    IEnumerator SpawnRutina()
     {
         while (isFighting)
         {
@@ -57,28 +62,42 @@ public class BossFightManager : MonoBehaviour
         Instantiate(objetos[index], pos, Quaternion.identity);
     }
 
-    public void AddParanoia(float amount)
+    // ⬇️ Función nueva que actualiza el tiempo visualmente
+    void UpdateTimerUI()
     {
-        paranoia += amount;
-        paranoiaBar.fillAmount = paranoia / 100f;
-
-        if (paranoia >= 100f)
+        if (timerText != null)
         {
-            LoseFight();
+            // Formato de tiempo: MINUTO:SEGUNDO
+            int minutos = Mathf.FloorToInt(timer / 60f);
+            int segundos = Mathf.FloorToInt(timer % 60f);
+
+            timerText.text = $"{minutos:00}:{segundos:00}";
         }
     }
 
-    void WinFight()
+    public void AddParanoia(float amount)
     {
-        isFighting = false;
-        player.inputBlockedByMiniGame = true;
-        SceneManager.LoadScene("BossWin");
+        if (ParanoiaManager.Instance != null)
+        {
+            ParanoiaManager.Instance.AddParanoiaPercent(amount);
+        }
     }
 
-    void LoseFight()
+    public void WinFight()
     {
         isFighting = false;
-        player.inputBlockedByMiniGame = true;
+        if (player != null)
+            player.inputBlockedByMiniGame = true;
+
+        SceneManager.LoadScene("FinalDemo");
+    }
+
+    public void LoseFight()
+    {
+        isFighting = false;
+        if (player != null)
+            player.inputBlockedByMiniGame = true;
+
         SceneManager.LoadScene("BossLose");
     }
 }
