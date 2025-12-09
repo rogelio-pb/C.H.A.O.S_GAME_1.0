@@ -67,7 +67,7 @@ public class PuertaFinal : MonoBehaviour
         PlayerPrefs.Save();
 
         // Aquí pones tu escena de carga
-        SceneManager.LoadScene(6);
+        SceneManager.LoadScene(5);
     }
 
     // -------------

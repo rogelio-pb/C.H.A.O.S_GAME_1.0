@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CreditsAutoScroll : MonoBehaviour
+public class CreditsFinal : MonoBehaviour
 {
     [Header("Scroll")]
     public ScrollRect scrollRect;
@@ -9,8 +9,7 @@ public class CreditsAutoScroll : MonoBehaviour
 
     [Header("Paneles")]
     public GameObject panelCreditos;       // Este panel donde están los créditos
-    public GameObject panelMenuPrincipal;  // Tu panel al que debe regresar
-
+  
     private bool scrolling = false;   // Ya no empieza automáticamente
 
     void OnEnable()
@@ -52,7 +51,6 @@ public class CreditsAutoScroll : MonoBehaviour
 
     private void VolverAlMenu()
     {
-        panelCreditos.SetActive(false);
-        panelMenuPrincipal.SetActive(true);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 }

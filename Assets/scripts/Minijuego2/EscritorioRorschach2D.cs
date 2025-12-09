@@ -45,6 +45,8 @@ public class EscritorioRorschach2D : MonoBehaviour
     // CLICK / TAP SOBRE EL ESCRITORIO
     private void OnMouseDown()
     {
+        if (TapBlocker.IsTouchOverUI())
+            return;
         if (miniGame == null)
         {
             Debug.LogWarning("[EscritorioRorschach2D] Falta asignar miniGame.");

@@ -81,6 +81,6 @@ public class PausePanel : MonoBehaviour
         Cursor.visible   = true;
 #endif
 
-        SceneManager.LoadScene(mainMenuScene);
+        SceneManager.LoadScene(0);
     }
 }

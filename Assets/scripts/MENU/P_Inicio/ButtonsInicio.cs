@@ -161,8 +161,17 @@ public class MenuController : MonoBehaviour
         HideAllPanels();
         panelMenuPrincipal.SetActive(true);
     }
-  
 
+    // Botón "Salir"
+    public void SalirDelJuego()
+    {
+        Debug.Log("Saliendo del juego...");
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
 
     // Ocultar todo
     void HideAllPanels()//Panel que oculta todos los demas

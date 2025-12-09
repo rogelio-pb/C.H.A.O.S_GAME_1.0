@@ -41,7 +41,7 @@ public class ArgelinoController : MonoBehaviour
     }
 
     // ---- helper para saber si la UI debe bloquear el movimiento ----
-    private bool IsInputBlocked()
+    private bool IsInputBlocked() //
     {
         // diálogo de la enfermera
         if (DialogueUI.Instance != null && DialogueUI.Instance.IsOpen)

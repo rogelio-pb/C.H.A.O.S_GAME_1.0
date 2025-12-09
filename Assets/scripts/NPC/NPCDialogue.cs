@@ -11,6 +11,9 @@ public class NPCDialogue : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (TapBlocker.IsTouchOverUI())
+            return;
+
         if (EventSystem.current.IsPointerOverGameObject())
             return;
         Debug.Log("[NPCDialogue] OnMouseDown en: " + name);

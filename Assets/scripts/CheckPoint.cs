@@ -9,6 +9,9 @@ public class Checkpoint : MonoBehaviour
     public CheckpointNotification notificador;  // arrastra aquí el notificador de checkpoint
     private void OnMouseDown()
     {
+        if (TapBlocker.IsTouchOverUI())
+            return;
+
         if (player == null)
         {
             Debug.LogError("No se asignó el player al checkpoint");
